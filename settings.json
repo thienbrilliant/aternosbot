@@ -1,13 +1,13 @@
 {
-  "name": "AFK Bot",
+  "name": "ashmourne_smp",
   "bot-account": {
-    "username": "imgonnacream",
+    "username": "ashmourne_smp",
     "password": "",
     "type": "offline"
   },
   "server": {
-    "ip": "survivalworld-dRNF.aternos.me",
-    "port": 44019,
+    "ip": "ashmournesmp.aternos.me",
+    "port": 39642,
     "version": "",
     "try-creative": false
   },
@@ -20,14 +20,14 @@
   "utils": {
     "auto-auth": {
       "enabled": true,
-      "password": "chalol78"
+      "password": "dochithien"
     },
     "anti-afk": {
       "enabled": true,
       "sneak": true
     },
     "chat-messages": {
-      "enabled": true,
+      "enabled": false,
       "repeat": true,
       "repeat-delay": 120,
       "messages": [
