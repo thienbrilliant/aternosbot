@@ -1,51 +1,126 @@
-# 🤖 Aternos 24/7 Hosting Bot
+# Minecraft AFK Bot 🤖
 
-A Minecraft bot that helps keep an Aternos server online 24/7 by automatically joining it using a Mineflayer-based bot. Perfect for SMPs or small multiplayer servers that shut down when no players are online.
+A lightweight, production-oriented Minecraft AFK bot built with [Mineflayer](https://github.com/PrismarineJS/mineflayer). It connects to a Minecraft server, performs configurable anti-AFK activity, reconnects after transient disconnects, and exposes a small health API for monitoring.
 
----
+> This project is provider-agnostic. It does **not** depend on Aternos, Render, or any specific hosting platform.
 
-## ✨ Features
-*    **Auto-Connect**: Automatically joins your server.
-*    **Infinite Uptime**: Prevents AFK kicks and server shutdowns.
-*    **Smart Reconnect**: Automatically reconnects if the internet drops or server restarts.
-*    **Render-Ready**: Includes "Self-Ping" to run 24/7 for FREE on Render.com.
-*    **Plugin Support**: Compatible with Paper/Spigot/Bukkit (auto-auth included).
+## Features
 
----
+- 🔌 Automatic reconnect with exponential backoff + jitter
+- 🕹️ Configurable anti-AFK behavior
+- 🚶 Optional circle movement, looking around, and jumping
+- 🔐 Optional server `/login` / `/register` automation
+- 💬 Optional scheduled chat messages
+- ❤️ `/health` and `/ready` monitoring endpoints
+- 🔒 Credentials are supplied through environment variables, never committed to Git
+- 🧩 Small modules with a single responsibility
+- 🧹 Managed timers and graceful shutdown
 
-## 🛠️ Requirements
-*   **GitHub Account**
-*   **Aternos Server**
-*   **Render Account** (for 24/7 hosting)
-*   **Common Sense!** 🧠        
+## Requirements
 
----
+- Node.js 20+
+- A Minecraft server reachable from the machine running the bot
+- A Minecraft account appropriate for the server's authentication mode
 
-## 🚀 Setup Guide
+## Setup
 
-We have made setup super easy! Check out the guide below:
+```bash
+git clone https://github.com/thienbrilliant/minecraft-afk-bot.git
+cd minecraft-afk-bot
+npm install
+cp .env.example .env
+```
 
-[**Detailed Google Doc Guide**](https://docs.google.com/document/d/1Fl0dRzP6O30ehp5-QcaB11IobF8I1JJhKUipzCWiCYA/edit?tab=t.0).
+Edit `.env`:
 
----
+```env
+MC_USERNAME=my_bot
+MC_AUTH=offline
+MC_HOST=play.example.net
+MC_PORT=25565
+MC_VERSION=
+```
 
-## ⚙️ Usage
-*   **Start**: Just turn on your Aternos server. The bot will join automatically.
-*   **Status**: Visit the Render URL to see a status dashboard.
-*   **Chat**: The bot logs chat to the console.
+Then start:
 
----
+```bash
+npm start
+```
 
-## ⚠️ Disclaimer
-This project is not affiliated with Aternos, Mojang, or Microsoft. Use at your own risk. Misuse may violate platform terms of service. This bot does not bypass Aternos queue limits; it only keeps the server active once it is online.
+Validate the source without starting the bot:
 
----
+```bash
+npm test
+```
 
-## ❤️ Credits
-*   **Slobos (Discord: sloboscc)** — Original creator & idea. (The GOAT 🐐)
-*   **Mr.Juice (Discord: Mr.Juice3046)** — Updates, Guide, & Maintenance.
+## Configuration
 
-**License**: MIT License
+All runtime configuration lives in environment variables. See `.env.example` for the complete list.
 
+Important variables:
 
+| Variable | Purpose | Default |
+|---|---|---|
+| `MC_USERNAME` | Bot username | required |
+| `MC_PASSWORD` | Minecraft account password when required | empty |
+| `MC_AUTH` | Mineflayer auth mode | `offline` |
+| `MC_HOST` | Minecraft hostname/IP | required |
+| `MC_PORT` | Minecraft port | `25565` |
+| `MC_VERSION` | Explicit protocol version | auto-detect |
+| `AUTO_RECONNECT` | Reconnect after disconnects | `true` |
+| `ANTI_AFK_ENABLED` | Enable anti-AFK activity | `true` |
+| `CIRCLE_WALK_ENABLED` | Enable movement | `true` |
+| `WEB_ENABLED` | Enable monitoring API | `true` |
+| `PORT` | Monitoring API port | `3000` |
 
+### Server authentication plugin
+
+If the server uses a `/login` or `/register` plugin, enable it explicitly:
+
+```env
+AUTO_AUTH_ENABLED=true
+AUTO_AUTH_PASSWORD=use_a_secret_here
+```
+
+Do not commit `.env` or any real credentials.
+
+## Monitoring
+
+When the web server is enabled:
+
+- `GET /` — minimal status dashboard
+- `GET /health` — detailed JSON health information
+- `GET /ready` — readiness probe (`200` when connected)
+
+Example:
+
+```bash
+curl http://localhost:3000/health
+```
+
+## Architecture
+
+```text
+index.js
+└── src/
+    ├── index.js       # application lifecycle
+    ├── config.js      # environment validation
+    ├── bot.js         # Mineflayer lifecycle + reconnect
+    ├── state.js       # runtime state
+    ├── timers.js      # timer ownership/cleanup
+    ├── logger.js      # structured console logging
+    ├── web.js         # monitoring HTTP API
+    └── modules/
+        ├── antiAfk.js
+        └── movement.js
+```
+
+The bot runtime is intentionally independent from the monitoring server. Hosting providers can therefore run the process however they want; no provider-specific keep-alive or self-ping mechanism is required.
+
+## Disclaimer
+
+This project is not affiliated with Mojang or Microsoft. Server owners may restrict automated clients or AFK behavior. Use the bot only where you have permission to do so and follow the server's rules and applicable terms of service.
+
+## License
+
+MIT
