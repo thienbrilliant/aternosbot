@@ -1,7 +1,6 @@
 'use strict';
 
 const mineflayer = require('mineflayer');
-const minecraftData = require('minecraft-data');
 const { createTimerRegistry } = require('./timers');
 const { registerAntiAfk } = require('./modules/antiAfk');
 const { registerMovement } = require('./modules/movement');
@@ -17,20 +16,14 @@ class MinecraftBot {
     this.stopping = false;
   }
 
-  start() {
-    this.stopping = false;
-    this.connect();
-  }
+  start() { this.stopping = false; this.connect(); }
 
   stop() {
     this.stopping = true;
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.reconnectTimer = null;
     this.timers.clear();
-    if (this.bot) {
-      try { this.bot.end('Shutdown'); } catch (_) {}
-      this.bot = null;
-    }
+    if (this.bot) { try { this.bot.end('Shutdown'); } catch (_) {} this.bot = null; }
     this.state.status = 'stopped';
   }
 
@@ -38,7 +31,6 @@ class MinecraftBot {
     if (this.stopping) return;
     this.cleanupConnection();
     this.state.status = 'connecting';
-
     const { bot, server, reconnect } = this.config;
     logger.info('Connecting to Minecraft server', { host: server.host, port: server.port });
 
@@ -92,7 +84,6 @@ class MinecraftBot {
   registerModules() {
     registerAntiAfk(this.bot, this.config, this.timers);
     registerMovement(this.bot, this.config, this.timers);
-
     if (this.config.auth.enabled) this.registerAuth();
     if (this.config.chat.enabled) this.registerChat();
   }
@@ -106,7 +97,6 @@ class MinecraftBot {
       this.bot.chat(type === 'register' ? `/register ${password} ${password}` : `/login ${password}`);
       logger.info('Authentication command sent', { type });
     };
-
     this.bot.on('messagestr', message => {
       const text = message.toLowerCase();
       if (text.includes('/register') || text.includes('register ')) handle('register');
@@ -119,7 +109,6 @@ class MinecraftBot {
       if (username === this.bot.username) return;
       logger.info('Minecraft chat', { username, message });
     });
-
     if (this.config.chat.messages.length) {
       let index = 0;
       this.timers.setInterval(() => {
@@ -136,13 +125,9 @@ class MinecraftBot {
     const { baseDelayMs, maxDelayMs } = this.config.reconnect;
     this.state.reconnectAttempts += 1;
     const exponential = Math.min(baseDelayMs * (2 ** (this.state.reconnectAttempts - 1)), maxDelayMs);
-    const jitter = Math.floor(Math.random() * 1000);
-    const delay = exponential + jitter;
+    const delay = exponential + Math.floor(Math.random() * 1000);
     logger.info('Scheduling reconnect', { attempt: this.state.reconnectAttempts, delayMs: delay });
-    this.reconnectTimer = setTimeout(() => {
-      this.reconnectTimer = null;
-      this.connect();
-    }, delay);
+    this.reconnectTimer = setTimeout(() => { this.reconnectTimer = null; this.connect(); }, delay);
   }
 
   cleanupConnection() {
